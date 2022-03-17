@@ -724,7 +724,7 @@ macro_rules! quote_tokens_with_context_spanned {
         ($($a1:tt)*) ($($a2:tt)*) ($($a3:tt)*)
     ) => {
         $(
-            $crate::quote_token_with_context_spanned!($tokens $span $b3 $b2 $b1 $curr $a1 $a2 $a3);
+            $crate::quote_token_with_context_spanned!($span $b3 $b2 $b1 $curr $a1 $a2 $a3 $tokens);
         )*
     };
 }
@@ -786,12 +786,13 @@ macro_rules! quote_token_with_context {
     };
 }
 
+// See the comment above `quote_token!` about the `$tokens` ordering.
 #[macro_export]
 #[doc(hidden)]
 macro_rules! quote_token_with_context_spanned {
-    ($tokens:ident $span:ident $b3:tt $b2:tt $b1:tt @ $a1:tt $a2:tt $a3:tt) => {};
+    ($span:ident $b3:tt $b2:tt $b1:tt @ $a1:tt $a2:tt $a3:tt $tokens:ident) => {};
 
-    ($tokens:ident $span:ident $b3:tt $b2:tt $b1:tt (#) ( $($inner:tt)* ) * $a3:tt) => {{
+    ($span:ident $b3:tt $b2:tt $b1:tt (#) ( $($inner:tt)* ) * $a3:tt $tokens:ident) => {{
         use $crate::__private::ext::*;
         let has_iter = $crate::__private::ThereIsNoIteratorInRepetition;
         $crate::pounded_var_names!(quote_bind_into_iter!(has_iter) () $($inner)*);
@@ -807,10 +808,10 @@ macro_rules! quote_token_with_context_spanned {
             $crate::quote_each_token_spanned!($tokens $span $($inner)*);
         }
     }};
-    ($tokens:ident $span:ident $b3:tt $b2:tt # (( $($inner:tt)* )) * $a2:tt $a3:tt) => {};
-    ($tokens:ident $span:ident $b3:tt # ( $($inner:tt)* ) (*) $a1:tt $a2:tt $a3:tt) => {};
+    ($span:ident $b3:tt $b2:tt # (( $($inner:tt)* )) * $a2:tt $a3:tt $tokens:ident) => {};
+    ($span:ident $b3:tt # ( $($inner:tt)* ) (*) $a1:tt $a2:tt $a3:tt $tokens:ident) => {};
 
-    ($tokens:ident $span:ident $b3:tt $b2:tt $b1:tt (#) ( $($inner:tt)* ) $sep:tt *) => {{
+    ($span:ident $b3:tt $b2:tt $b1:tt (#) ( $($inner:tt)* ) $sep:tt * $tokens:ident) => {{
         use $crate::__private::ext::*;
         let mut _i = 0usize;
         let has_iter = $crate::__private::ThereIsNoIteratorInRepetition;
@@ -825,19 +826,19 @@ macro_rules! quote_token_with_context_spanned {
             $crate::quote_each_token_spanned!($tokens $span $($inner)*);
         }
     }};
-    ($tokens:ident $span:ident $b3:tt $b2:tt # (( $($inner:tt)* )) $sep:tt * $a3:tt) => {};
-    ($tokens:ident $span:ident $b3:tt # ( $($inner:tt)* ) ($sep:tt) * $a2:tt $a3:tt) => {};
-    ($tokens:ident $span:ident # ( $($inner:tt)* ) * (*) $a1:tt $a2:tt $a3:tt) => {
+    ($span:ident $b3:tt $b2:tt # (( $($inner:tt)* )) $sep:tt * $a3:tt $tokens:ident) => {};
+    ($span:ident $b3:tt # ( $($inner:tt)* ) ($sep:tt) * $a2:tt $a3:tt $tokens:ident) => {};
+    ($span:ident # ( $($inner:tt)* ) * (*) $a1:tt $a2:tt $a3:tt $tokens:ident) => {
         // https://github.com/dtolnay/quote/issues/130
         $crate::quote_token_spanned!(* $tokens $span);
     };
-    ($tokens:ident $span:ident # ( $($inner:tt)* ) $sep:tt (*) $a1:tt $a2:tt $a3:tt) => {};
+    ($span:ident # ( $($inner:tt)* ) $sep:tt (*) $a1:tt $a2:tt $a3:tt $tokens:ident) => {};
 
-    ($tokens:ident $span:ident $b3:tt $b2:tt $b1:tt (#) $var:ident $a2:tt $a3:tt) => {
+    ($span:ident $b3:tt $b2:tt $b1:tt (#) $var:ident $a2:tt $a3:tt $tokens:ident) => {
         $crate::ToTokens::to_tokens(&$var, &mut $tokens);
     };
-    ($tokens:ident $span:ident $b3:tt $b2:tt # ($var:ident) $a1:tt $a2:tt $a3:tt) => {};
-    ($tokens:ident $span:ident $b3:tt $b2:tt $b1:tt ($curr:tt) $a1:tt $a2:tt $a3:tt) => {
+    ($span:ident $b3:tt $b2:tt # ($var:ident) $a1:tt $a2:tt $a3:tt $tokens:ident) => {};
+    ($span:ident $b3:tt $b2:tt $b1:tt ($curr:tt) $a1:tt $a2:tt $a3:tt $tokens:ident) => {
         $crate::quote_token_spanned!($curr $tokens $span);
     };
 }
